@@ -2,10 +2,5 @@
 
 ## v0.0.1 - Date
 
-**Improvement**:
+## v0.0.2 - Lab 4 added
 
--   TBD
-
-**New Features**:
-
--   TBD
