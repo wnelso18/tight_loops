@@ -52,3 +52,7 @@ nav:
           - tight_loops module: tight_loops.md
     - Labs:
         - docs/labs
+    -Examples:
+        - examples/intro.ipynb
+        - folium.ipynb
+
