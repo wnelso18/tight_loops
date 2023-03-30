@@ -2,6 +2,6 @@
 
 __author__ = """Will Nelson"""
 __email__ = 'wnelso18@vols.utk.edu'
-__version__ = '0.0.4'
+__version__ = '0.1.0'
 
 from .tight_loops import *
