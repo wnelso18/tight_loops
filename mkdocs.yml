@@ -53,7 +53,6 @@ nav:
     - Labs:
         - docs/labs/lab4
         - docs/labs/lab5
-            -docs/labs/lab5/texts
     -Examples:
         - examples/intro.ipynb
         - examples/folium.ipynb
