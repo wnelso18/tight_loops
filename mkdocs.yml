@@ -51,8 +51,8 @@ nav:
     - API Reference:
           - tight_loops module: tight_loops.md
     - Labs:
-        - labs/lab4
-        - labs/lab5
+        - labs/lab4/lab4.ipynb
+        - labs/lab5/lab5.ipynb
     - Examples:
         - examples/intro.ipynb
         - examples/folium.ipynb
