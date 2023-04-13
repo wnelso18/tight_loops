@@ -127,10 +127,62 @@ class Map(ipyleaflet.Map):
         geojson = ipyleaflet.GeoJSON(data=data, **kwargs)
         self.add_layer(geojson)
         return geojson
-        
+    
+    def add_vector(self, data, **kwargs):
+        """Adds a vector layer to the map."""
+        import geopandas as gpd
+        import json
+        gdf = gpd.read_file(data)
+        data = json.loads(gdf.to_json())
+        geojson = ipyleaflet.GeoJSON(data=data, **kwargs)
+        self.add_layer(geojson)
+        return geojson
+    
+    def add_raster(self, url, name='Raster', fit_bounds=True, **kwargs):
+        """Adds a raster layer to the map.
 
-def generate_random_string(length=15):
-    """Generates a random string."""
-    return ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(length)])
+            Args:
+                url (str): The URL of the raster.
+                name (str): The name of the raster.
+                fit_bounds (bool): Whether to fit the map bounds to the raster.
+        """
+        import httpx
+
+        titiler_endpoint = "https://titiler.xyz" 
+
+        r = httpx.get(
+            f"{titiler_endpoint}/cog/info",
+            params = {
+                "url": url,
+            }
+        ).json()
+
+        bounds = r["bounds"]
+
+        r = httpx.get(
+            f"{titiler_endpoint}/cog/tilejson.json",
+            params = {
+                "url": url,
+            }
+        ).json()
+
+        tile = r["tiles"][0]
+
+        self.add_tile_layer(url=tile, name=name, attribution="raster", **kwargs)
+
+        if fit_bounds:
+            bbox = [[bounds[1], bounds[0]], [bounds[3], bounds[2]]]
+            self.fit_bounds(bbox)
+
+    def add_local_raster(self, filename, name='Local Raster', **kwargs):
+        try:
+            import localtilesserver
+        except ImportError:
+            raise ImportError("Please install localtilesserver: pip install localtilesserver")
 
 
+
+
+# def generate_random_string(length=15):
+#     """Generates a random string."""
+#     return ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(length)])
