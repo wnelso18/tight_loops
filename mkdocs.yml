@@ -54,6 +54,7 @@ nav:
         - labs/lab4/lab4.ipynb
         - labs/lab5/lab5.ipynb
         - labs/lab6/lab6.ipynb
+        - labs/lab7/lab7.ipynb
     - Examples:
         - examples/intro.ipynb
         - examples/folium.ipynb
