@@ -2,6 +2,8 @@
 
 import random
 import ipyleaflet
+import ipywidgets as widgets
+from ipyleaflet import WidgetControl
 
 class Map(ipyleaflet.Map):
     def __init__(self, center=(0,0), zoom=2, **kwargs) -> None:
@@ -179,6 +181,21 @@ class Map(ipyleaflet.Map):
             import localtilesserver
         except ImportError:
             raise ImportError("Please install localtilesserver: pip install localtilesserver")
+        
+    def opacity_slider(self, value=0.1, min=0, max=1, position="bottomright"):
+        
+        slider = widgets.FloatSlider(value=value, min=min ,max=max)
+        widgets.jslink((self.layers[1], 'opacity'), (slider, 'value'))
+        control = WidgetControl(widget=slider, position=position)
+        self.add_control(control)
+
+    def add_image(self, url, width, height, position="bottomleft"):
+        """Adds an image to the map."""
+
+        widget = widgets.HTML(value=f"<img src={url} width='{width}' height='{height}'>")
+        control = WidgetControl(widget=widget, position = position)
+        self.add_control(control)
+
 
 
 
