@@ -64,4 +64,4 @@ nav:
         - examples/ipywidgets.ipynb
     - Apps:
         - tight_loops/tight_loops.py
-        - tight_loops/folium_loops.ipynb
+        - tight_loops/folium_loops.py
