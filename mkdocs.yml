@@ -61,4 +61,6 @@ nav:
         - examples/folium.ipynb
         - examples/ipyleaflet.ipynb
         - examples/tight_loops.ipynb
+        - examples/ipywidgets.ipynb
+        - examples/ipyleaflet.ipynb
 
