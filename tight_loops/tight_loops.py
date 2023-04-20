@@ -183,6 +183,14 @@ class Map(ipyleaflet.Map):
             raise ImportError("Please install localtilesserver: pip install localtilesserver")
         
     def opacity_slider(self, value=0.1, min=0, max=1, position="bottomright"):
+        """Adds an opacity slider to the map.
+        
+        Args:   
+            value (float): The initial value of the slider.
+            min (float): The minimum value of the slider.
+            max (float): The maximum value of the slider.
+            position (str): The position of the slider.
+        """
         
         slider = widgets.FloatSlider(value=value, min=min ,max=max)
         widgets.jslink((self.layers[1], 'opacity'), (slider, 'value'))
@@ -190,7 +198,14 @@ class Map(ipyleaflet.Map):
         self.add_control(control)
 
     def add_image(self, url, width, height, position="bottomleft"):
-        """Adds an image to the map."""
+        """Adds an image to the map.
+        
+        Args:
+            url (str): The URL of the image.
+            width (str): The width of the image.
+            height (str): The height of the image.
+            position (str): The position of the image.
+        """
 
         widget = widgets.HTML(value=f"<img src={url} width='{width}' height='{height}'>")
         control = WidgetControl(widget=widget, position = position)
