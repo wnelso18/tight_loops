@@ -56,12 +56,14 @@ nav:
         - labs/lab6/lab6.ipynb
         - labs/lab7/lab7.ipynb
         - labs/lab8/lab8.ipynb
+        - labs/lab9/lab9.ipynb
     - Examples:
         - examples/intro.ipynb
         - examples/folium.ipynb
         - examples/ipyleaflet.ipynb
         - examples/tight_loops.ipynb
         - examples/ipywidgets.ipynb
+        - examples/toolbar.ipynb
     - Apps:
         - tight_loops/tight_loops.py
         - tight_loops/folium_loops.py
