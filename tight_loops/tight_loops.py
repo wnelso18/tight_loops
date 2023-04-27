@@ -23,6 +23,13 @@ class Map(ipyleaflet.Map):
         
         if kwargs["fullscreen_control"]:
             self.add_fullscreen_control()
+        
+        if "add_toolbar" not in kwargs:
+            kwargs["add_toolbar"] = True
+
+        if kwargs["add_toolbar"]:
+            self.add_toolbar()
+
     
     def add_search_control(self, url = 'https://nominatim.openstreetmap.org/search?format=json&q={s}', position="topleft", **kwargs):
         """Adds a search control to the map."""
@@ -210,6 +217,114 @@ class Map(ipyleaflet.Map):
         widget = widgets.HTML(value=f"<img src={url} width='{width}' height='{height}'>")
         control = WidgetControl(widget=widget, position = position)
         self.add_control(control)
+
+    def add_toolbar(self, position="topright"):
+
+        widget_width = "250px"
+        padding = "0px 0px 0px 5px"  # upper, right, bottom, left
+
+        toolbar_button = widgets.ToggleButton(
+            value=False,
+            tooltip="Toolbar",
+            icon="wrench",
+            layout=widgets.Layout(width="28px", height="28px", padding=padding),
+        )
+
+        close_button = widgets.ToggleButton(
+            value=False,
+            tooltip="Close the tool",
+            icon="times",
+            button_style="primary",
+            layout=widgets.Layout(height="28px", width="28px", padding=padding),
+        )
+
+        toolbar = widgets.HBox([toolbar_button])
+
+        def toolbar_click(change):
+            if change["new"]:
+                toolbar.children = [toolbar_button, close_button]
+            else:
+                toolbar.children = [toolbar_button]
+                
+        toolbar_button.observe(toolbar_click, "value")
+
+        def close_click(change):
+            if change["new"]:
+                toolbar_button.close()
+                close_button.close()
+                toolbar.close()
+                
+        close_button.observe(close_click, "value")
+
+        rows = 2
+        cols = 2
+        grid = widgets.GridspecLayout(rows, cols, grid_gap="0px", layout=widgets.Layout(width="65px"))
+
+        icons = ["folder-open", "map", "bluetooth", "area-chart"]
+
+        for i in range(rows):
+            for j in range(cols):
+                grid[i, j] = widgets.Button(description="", button_style="primary", icon=icons[i*rows+j], 
+                                            layout=widgets.Layout(width="28px", padding="0px"))
+                
+        toolbar = widgets.VBox([toolbar_button])
+
+        def toolbar_click(change):
+            if change["new"]:
+                toolbar.children = [widgets.HBox([close_button, toolbar_button]), grid]
+            else:
+                toolbar.children = [toolbar_button]
+                
+        toolbar_button.observe(toolbar_click, "value")
+
+
+
+        output = widgets.Output()
+        output_ctrl = WidgetControl(widget=output, position="bottomright")
+        self.add_control(output_ctrl)
+
+        basemap = widgets.Dropdown(
+
+            options = ["Satellite", "Roadmap"],
+            value = None,
+            description = "Basemap",
+            style = {"description_width": "initial"},
+            layout=widgets.Layout(width="250px")
+        )
+        
+        
+        basemap_ctrl = WidgetControl(widget=basemap, position="topright")
+
+        def change_basemap(change):
+            if change['new']:
+                with output:
+                    print(basemap.value)
+                self.add_basemap(basemap.value)
+
+        basemap.observe(change_basemap, names="value")
+
+        def tool_click(b):
+            with output:
+                print(f"{b.icon} clicked")
+
+                if b.icon == "map":
+                    if basemap_ctrl not in self.controls:
+                        self.add(basemap_ctrl)
+        for i in range(rows):
+            for j in range(cols):
+                tool = grid[i, j]
+                tool.on_click(tool_click)
+
+        toolbar_ctrl = ipyleaflet.WidgetControl(widget=toolbar, position=position)
+
+        self.add_control(toolbar_ctrl)
+
+
+
+
+
+
+
 
 
 
