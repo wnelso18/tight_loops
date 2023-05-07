@@ -219,6 +219,7 @@ class Map(ipyleaflet.Map):
         self.add_control(control)
 
     def add_toolbar(self, position="topright"):
+        
 
         widget_width = "250px"
         padding = "0px 0px 0px 5px"  # upper, right, bottom, left
