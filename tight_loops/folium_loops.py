@@ -1,8 +1,7 @@
 import folium
-import streamlit 
-import streamlit_folium
 import os
 import geemap.foliumap as geemap
+
 
 
 class Map(folium.Map):
@@ -66,6 +65,7 @@ class Map(folium.Map):
         if not layer_ctrl:
             folium.LayerControl().add_to(self)
 
+
     def to_html(self, filename=None, **kwargs):
         """Exports a map as an HTML file.
 
@@ -90,15 +90,6 @@ class Map(folium.Map):
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
             self.save(filename, **kwargs)
-        else:
-            filename = os.path.abspath(random_string() + ".html")
-            self.save(filename, **kwargs)
-            out_html = ""
-            with open(filename) as f:
-                lines = f.readlines()
-                out_html = "".join(lines)
-            os.remove(filename)
-            return out_html
 
     def to_streamlit(
         self,
