@@ -79,8 +79,6 @@ class Map(folium.Map):
             str: A string containing the HTML code.
         """
 
-        if self.options["layersControl"]:
-            self.add_layer_control()
 
         if filename is not None:
             if not filename.endswith(".html"):
