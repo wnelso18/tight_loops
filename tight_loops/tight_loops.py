@@ -4,6 +4,7 @@ import random
 import ipyleaflet
 import ipywidgets as widgets
 from ipyleaflet import WidgetControl
+import whitebox as wbt
 
 class Map(ipyleaflet.Map):
     def __init__(self, center=(0,0), zoom=2, **kwargs) -> None:
@@ -320,6 +321,80 @@ class Map(ipyleaflet.Map):
 
         self.add_control(toolbar_ctrl)
 
+from osgeo import gdal, ogr, osr
+import os
+
+def contour_tif(input_file, output_file="new_contours/output_contours.shp", contourInterval=200.0, contourBase=0.0, fixedLevelCount=[], useNoData=False, noDataValue=0, idField=0, elevField=1):
+
+    """
+    This function creates contour lines from a DEM file. The function uses the GDAL library to open the DEM file and
+    extract the elevation values. The function then uses the GDAL library to create a vector file containing the
+    contour lines. The function uses the OGR library to create the vector file and add the contour lines to it.
+
+    :param input_file: The input DEM file.
+    :param output_file: The output vector file containing the contour lines.
+    :param interval: The contour interval.
+    :param base: The base contour.
+    :param fixedLevels: A list of fixed contour levels.
+    :param useNoData: A boolean value indicating whether to use the NoData value.
+    :param useZ: A boolean value indicating whether to use the Z value.
+    :param idField: The field number for the ID field.
+    :param elevField: The field number for the elevation field.
+    """
+
+    # Open the DEM file using the GDAL library
+    input_file = 'Smokies_DEM.tif'
+    ds = gdal.Open(input_file)
+
+    # Get the geotransform information from the DEM
+    transform = ds.GetGeoTransform()
+
+    # Define the output file format and options
+    driver = ogr.GetDriverByName('ESRI Shapefile')
+    output_file = output_file
+    output_dir = os.path.dirname(output_file)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    output_ds = driver.CreateDataSource(output_file)
+
+    # Create the output layer and add a field for elevation values
+    contour_layer = output_ds.CreateLayer('contours', srs=osr.SpatialReference().CloneGeogCS())
+    contour_field = ogr.FieldDefn('elev', ogr.OFTReal)
+    contour_layer.CreateField(contour_field)
+
+
+    band = ds.GetRasterBand(1)
+    gdal.ContourGenerate(
+        band, 
+        contourInterval=contourInterval, 
+        contourBase=contourBase, 
+        fixedLevelCount=fixedLevelCount, 
+        useNoData=useNoData, 
+        noDataValue=noDataValue,
+        dstLayer=contour_layer, 
+        idField=idField, 
+        elevField=elevField
+        )
+    
+
+# ContourGenerate(Band 
+# srcBand, 
+# double contourInterval, 
+# double contourBase, 
+# int fixedLevelCount, 
+# int useNoData, 
+# double noDataValue, 
+# Layer dstLayer, 
+# int idField, 
+# int elevField, 
+# GDALProgressFunc callback=0, 
+# void * callback_data=None) 
+
+
+
+    # Clean up the resources
+    ds = None
+    output_ds = None
 
 
 
@@ -328,6 +403,19 @@ class Map(ipyleaflet.Map):
 
 
 
+    # def contour_lines(self, i, output="contour_lines", interval=10.0, base=0.0, smooth=9, tolerance=10.0, callback=None):
+
+    #     wbt.WhiteboxTools.contours_from_raster(
+    #         i, 
+    #         output=output, 
+    #         interval=interval,
+    #         base=base, 
+    #         smooth=smooth, 
+    #         tolerance=tolerance,
+    #         callback=callback
+    #     )
+
+    #     self.add_shp(output)
 
 
 
