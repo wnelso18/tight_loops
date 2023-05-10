@@ -376,6 +376,9 @@ def contour_tif(input_file, output_file="new_contours/output_contours.shp", cont
         elevField=elevField
         )
     
+    # Clean up the resources
+    ds = None
+    output_ds = None
 
 # ContourGenerate(Band 
 # srcBand, 
@@ -392,9 +395,7 @@ def contour_tif(input_file, output_file="new_contours/output_contours.shp", cont
 
 
 
-    # Clean up the resources
-    ds = None
-    output_ds = None
+   
 
 
 

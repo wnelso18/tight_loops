@@ -64,6 +64,7 @@ nav:
         - examples/tight_loops.ipynb
         - examples/ipywidgets.ipynb
         - examples/toolbar.ipynb
+        - examples/contour_tif.ipynb
     - Apps:
         - tight_loops/tight_loops.py
         - tight_loops/folium_loops.py
