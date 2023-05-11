@@ -2,4 +2,4 @@ folium
 ipyleaflet
 geopandas
 httpx
-GDAL==3.4.1
+
