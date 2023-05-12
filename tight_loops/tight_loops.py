@@ -4,7 +4,6 @@ import random
 import ipyleaflet
 import ipywidgets as widgets
 from ipyleaflet import WidgetControl
-import whitebox as wbt
 
 class Map(ipyleaflet.Map):
     def __init__(self, center=(0,0), zoom=2, **kwargs) -> None:
@@ -118,25 +117,47 @@ class Map(ipyleaflet.Map):
             
     def add_geojson(self, data, **kwargs):
         """Adds a GeoJSON layer to the map."""
-
-        isinstance(data, str)
         import json
-        with open(data, "r") as f:
-            data = json.load(f)
+
+        if isinstance(data, str):
+        
+            with open(data, "r") as f:
+                data = json.load(f)
+
+        elif not isinstance(data, dict):
+            raise ValueError("data must be a GeoJSON dictionary or a GeoJSON file path.")
 
         geojson = ipyleaflet.GeoJSON(data=data, **kwargs)
         self.add_layer(geojson)
-        return geojson
     
-    def add_shp(self, data, **kwargs):
-        """Adds a Shapefile layer to the map."""
+    # def add_shp(self, data, **kwargs):
+    #     """Adds a Shapefile layer to the map."""
+    #     import geopandas as gpd
+    #     import json
+    #     gdf = gpd.read_file(data)
+    #     data = json.loads(gdf.to_json())
+    #     geojson = ipyleaflet.GeoJSON(data=data, **kwargs)
+    #     self.add_layer(geojson)
+
+    def add_shp(self, data, name='Shapefile', **kwargs):
+        """Adds a Shapefile layer to the map.
+
+        Args:
+            data (str): The path to the Shapefile.
+        """
         import geopandas as gpd
-        import json
+
         gdf = gpd.read_file(data)
-        data = json.loads(gdf.to_json())
-        geojson = ipyleaflet.GeoJSON(data=data, **kwargs)
-        self.add_layer(geojson)
-        return geojson
+        
+        if gdf.crs.to_epsg() != 4326:
+            
+            gdf = gdf.to_crs(epsg=4326)
+            geojson = gdf.__geo_interface__
+        
+        else:
+            geojson = gdf.__geo_interface__
+
+        self.add_geojson(geojson, name=name, **kwargs)
     
     def add_vector(self, data, **kwargs):
         """Adds a vector layer to the map."""
@@ -146,7 +167,6 @@ class Map(ipyleaflet.Map):
         data = json.loads(gdf.to_json())
         geojson = ipyleaflet.GeoJSON(data=data, **kwargs)
         self.add_layer(geojson)
-        return geojson
     
     def add_raster(self, url, name='Raster', fit_bounds=True, **kwargs):
         """Adds a raster layer to the map.
@@ -285,6 +305,7 @@ class Map(ipyleaflet.Map):
         output_ctrl = WidgetControl(widget=output, position="bottomright")
         self.add_control(output_ctrl)
 
+
         basemap = widgets.Dropdown(
 
             options = ["Satellite", "Roadmap"],
@@ -321,105 +342,130 @@ class Map(ipyleaflet.Map):
 
         self.add_control(toolbar_ctrl)
 
-from osgeo import gdal, ogr, osr
-import os
+    def csv_to_shp(self, data, output):
+        import pandas as pd
+        import geopandas as gpd
+        from shapely.geometry import Point
 
-def contour_tif(input_file, output_file="new_contours/output_contours.shp", contourInterval=200.0, contourBase=0.0, fixedLevelCount=[], useNoData=False, noDataValue=0, idField=0, elevField=1):
+        df = pd.read_csv(data)
 
-    """
-    This function creates contour lines from a DEM file. The function uses the GDAL library to open the DEM file and
-    extract the elevation values. The function then uses the GDAL library to create a vector file containing the
-    contour lines. The function uses the OGR library to create the vector file and add the contour lines to it.
+        geometry = [Point(xy) for xy in zip(df.longitude, df.latitude)]
+        gdf = gpd.GeoDataFrame(df, geometry=geometry)
+        gdf = gdf.set_crs(epsg=4326)
+        gdf.to_file(output, driver='ESRI Shapefile')
 
-    :param input_file: The input DEM file.
-    :param output_file: The output vector file containing the contour lines.
-    :param interval: The contour interval.
-    :param base: The base contour.
-    :param fixedLevels: A list of fixed contour levels.
-    :param useNoData: A boolean value indicating whether to use the NoData value.
-    :param useZ: A boolean value indicating whether to use the Z value.
-    :param idField: The field number for the ID field.
-    :param elevField: The field number for the elevation field.
-    """
-
-    # Open the DEM file using the GDAL library
-    input_file = 'Smokies_DEM.tif'
-    ds = gdal.Open(input_file)
-
-    # Get the geotransform information from the DEM
-    transform = ds.GetGeoTransform()
-
-    # Define the output file format and options
-    driver = ogr.GetDriverByName('ESRI Shapefile')
-    output_file = output_file
-    output_dir = os.path.dirname(output_file)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    output_ds = driver.CreateDataSource(output_file)
-
-    # Create the output layer and add a field for elevation values
-    contour_layer = output_ds.CreateLayer('contours', srs=osr.SpatialReference().CloneGeogCS())
-    contour_field = ogr.FieldDefn('elev', ogr.OFTReal)
-    contour_layer.CreateField(contour_field)
-
-
-    band = ds.GetRasterBand(1)
-    gdal.ContourGenerate(
-        band, 
-        contourInterval=contourInterval, 
-        contourBase=contourBase, 
-        fixedLevelCount=fixedLevelCount, 
-        useNoData=useNoData, 
-        noDataValue=noDataValue,
-        dstLayer=contour_layer, 
-        idField=idField, 
-        elevField=elevField
-        )
+        self.add_shp(output)
     
-    # Clean up the resources
-    ds = None
-    output_ds = None
 
-# ContourGenerate(Band 
-# srcBand, 
-# double contourInterval, 
-# double contourBase, 
-# int fixedLevelCount, 
-# int useNoData, 
-# double noDataValue, 
-# Layer dstLayer, 
-# int idField, 
-# int elevField, 
-# GDALProgressFunc callback=0, 
-# void * callback_data=None) 
+    def grouping_points(self, data):
+        import pandas as pd
+        from ipyleaflet import Marker, MarkerCluster
+        import ipywidgets as widgets
 
+        df = pd.read_csv(data)
 
+        markers = []
 
-   
+        for index, row in df.iterrows():
+            name = row['name']
+            latitude = row['latitude']
+            longitude = row['longitude']
+            marker = Marker(location=(latitude, longitude))
 
+            popup_content = widgets.HTML()
+            popup_content.value = f"<b>Name:</b> {name}<br><b>Latitude:</b> {latitude}<br><b>Longitude:</b> {longitude}"
+            marker.popup = popup_content
 
-
+            markers.append(marker)
 
 
+        marker_cluster = MarkerCluster()
+
+        marker_cluster = MarkerCluster(markers=markers)
+
+        self.add_layer(marker_cluster)
+
+def contour_tif_box(
+    i,
+    output,
+    interval=200,
+    base=0,
+    smooth=9,
+    tolerance=10,
+    ):
+
+    import os
+    import whitebox
+
+    wbt = whitebox.WhiteboxTools()
+
+    i = os.path.abspath(i)
+    output = os.path.abspath(output)
+
+    wbt.contours_from_raster(i=i, output=output, interval=interval, base=base, smooth=smooth, tolerance=tolerance)
+
+# ----------------------------------------------------------------GDAL Contour Function----------------------------------------------------------------
+# from osgeo import gdal, ogr, osr
+# import os
+
+# def contour_tif(input_file, output_file="new_contours/output_contours.shp", contourInterval=200.0, contourBase=0.0, fixedLevelCount=[], useNoData=False, noDataValue=0, idField=0, elevField=1):
+
+#     """
+#     This function creates contour lines from a DEM file. The function uses the GDAL library to open the DEM file and
+#     extract the elevation values. The function then uses the GDAL library to create a vector file containing the
+#     contour lines. The function uses the OGR library to create the vector file and add the contour lines to it.
+
+#     :param input_file: The input DEM file.
+#     :param output_file: The output vector file containing the contour lines.
+#     :param interval: The contour interval.
+#     :param base: The base contour.
+#     :param fixedLevels: A list of fixed contour levels.
+#     :param useNoData: A boolean value indicating whether to use the NoData value.
+#     :param useZ: A boolean value indicating whether to use the Z value.
+#     :param idField: The field number for the ID field.
+#     :param elevField: The field number for the elevation field.
+#     """
+
+#     # Open the DEM file using the GDAL library
+#     input_file = 'Smokies_DEM.tif'
+#     ds = gdal.Open(input_file)
+
+#     # Get the geotransform information from the DEM
+#     transform = ds.GetGeoTransform()
+
+#     # Define the output file format and options
+#     driver = ogr.GetDriverByName('ESRI Shapefile')
+#     output_file = output_file
+#     output_dir = os.path.dirname(output_file)
+#     if not os.path.exists(output_dir):
+#         os.makedirs(output_dir)
+#     output_ds = driver.CreateDataSource(output_file)
+
+#     # Create the output layer and add a field for elevation values
+#     contour_layer = output_ds.CreateLayer('contours', srs=osr.SpatialReference().CloneGeogCS())
+#     contour_field = ogr.FieldDefn('elev', ogr.OFTReal)
+#     contour_layer.CreateField(contour_field)
 
 
+#     band = ds.GetRasterBand(1)
+#     gdal.ContourGenerate(
+#         band, 
+#         contourInterval=contourInterval, 
+#         contourBase=contourBase, 
+#         fixedLevelCount=fixedLevelCount, 
+#         useNoData=useNoData, 
+#         noDataValue=noDataValue,
+#         dstLayer=contour_layer, 
+#         idField=idField, 
+#         elevField=elevField
+#         )
+    
+#     # Clean up the resources
+#     ds = None
+#     output_ds = None
 
-    # def contour_lines(self, i, output="contour_lines", interval=10.0, base=0.0, smooth=9, tolerance=10.0, callback=None):
+    
 
-    #     wbt.WhiteboxTools.contours_from_raster(
-    #         i, 
-    #         output=output, 
-    #         interval=interval,
-    #         base=base, 
-    #         smooth=smooth, 
-    #         tolerance=tolerance,
-    #         callback=callback
-    #     )
-
-    #     self.add_shp(output)
-
-
-
-# def generate_random_string(length=15):
-#     """Generates a random string."""
-#     return ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(length)])
+def generate_random_string(length=15):
+    """Generates a random string."""
+    return ''.join([random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(length)])
