@@ -1,0 +1,2 @@
+In Python you can print things
+In Python you can use the input function
