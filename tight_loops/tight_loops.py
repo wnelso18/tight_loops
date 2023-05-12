@@ -204,11 +204,11 @@ class Map(ipyleaflet.Map):
             bbox = [[bounds[1], bounds[0]], [bounds[3], bounds[2]]]
             self.fit_bounds(bbox)
 
-    def add_local_raster(self, filename, name='Local Raster', **kwargs):
-        try:
-            import localtilesserver
-        except ImportError:
-            raise ImportError("Please install localtilesserver: pip install localtilesserver")
+    # def add_local_raster(self, filename, name='Local Raster', **kwargs):
+    #     try:
+    #         import localtilesserver
+    #     except ImportError:
+    #         raise ImportError("Please install localtilesserver: pip install localtilesserver")
         
     def opacity_slider(self, value=0.1, min=0, max=1, position="bottomright"):
         """Adds an opacity slider to the map.
